@@ -1,2 +1,0 @@
-# proyecto
-sistema de seguros
