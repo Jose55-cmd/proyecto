@@ -1,0 +1,547 @@
+# perfiles.html
+{% extends 'base.html' %}
+{% load static %}
+
+    {% block extra_css %}
+    <link rel="stylesheet" href="{% static 'perfiles.css' %}">
+    {% endblock %}
+    {% block content %}
+        <div class="container-fluid p-0 d-flex">
+        
+        <!-- MAIN CONTENT - DASHBOARD -->
+        <main class="main-content-wrapper">
+            <!-- DASHBOARD -->
+            <div class="main-dashboard" id="dashboardMain">
+                <div class="top-navbar">
+                    <div class="action-buttons">
+                        <div class="btn-action back" onclick="window.history.back()" title="Volver atrás">
+        <i class="bi bi-arrow-left"></i>
+    </div>
+                        <a href="{% url 'perfil_nuevo' %}" class="btn-action plus" style="text-decoration: none;">
+    +
+</a>
+                        
+                    </div> 
+                    <div class="nav-item" id="navDashboard">
+                        <i class="bi bi-grid-1x2-fill"></i>
+                        <span>dashboard</span>
+                    </div>
+                    <div class="nav-item active" id="navPersonas">
+                        <i class="bi bi-people-fill"></i>
+                        <span>personas</span>
+                    </div>
+
+                    <div class="user-section">
+                        <span class="user-name" id="userDisplay">Admin</span>
+                        <div class="user-avatar">A</div>
+                    </div>
+                </div>
+
+                <div class="main-content">
+                    <div class="page-header">
+                        <h1 id="pageTitle">Administracion de Perfiles</h1>
+                        <div class="filter-text" id="filterIndicator">
+                            <span>Filtro</span> | Todos los registros
+                        </div>
+                    </div>
+
+                    <!-- Search section -->
+                    <div class="search-section" id="searchSection">
+                        <div class="search-title" onclick="toggleFilters()">
+                            Opciones de búsqueda:
+                            <span class="arrow" id="searchArrow">▼</span>
+                        </div>
+
+                        <div class="filters-container" id="filtersContainer">
+                            <div class="filters-grid">
+    <div class="filter-item">
+        <label>Perfil</label>
+        <input type="text" id="filterPerson" placeholder="Buscar por perfil..." onkeyup="aplicarFiltros()">
+    </div>
+    <div class="filter-item">
+        <label>Fecha de creacion</label>
+        <input type="date" id="filteremail" onchange="aplicarFiltros()" onkeyup="aplicarFiltros()">
+    </div>
+
+                            
+                                <div class="filter-item">
+                                    <label>Estatus</label>
+                                    <select id="filterOrganization" onchange="aplicarFiltros()">
+                                        <option value="">Cualquier</option>
+                                        <option value="Démó">Activo</option>
+                                        <option value="IT Department">Inactivo</option>
+                                        <option value="Corretaje Central">Creado</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="total-objects" id="totalObjects">Total: 7 personas</div>
+                    </div>
+
+                    <!-- Tabla con botones -->
+                    <div class="table-container" id="tableContainer">
+    <div class="table-actions-header" style="display: flex; align-items: center; gap: 15px;">
+        <a href="{% url 'perfil_nuevo' %}" style="color: inherit; text-decoration: none;">
+    <i class="bi bi-plus-lg action-icon" title="Agregar"></i>
+</a>
+        <i class="bi bi-arrow-clockwise action-icon" onclick="aplicarFiltros()" title="Refrescar"></i>
+        <div style="position: relative; display: inline-block;">
+            <i class="bi bi-three-dots-vertical action-icon" onclick="toggleMenuOpciones(event)" title="Más opciones"></i>
+            
+            <div id="menu-tres-puntos" class="menu-desplegable-acciones">
+                <a href="#" class="opcion-menu" onclick="accionVisual(event, 'Exportar a Excel')">
+                    <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
+                </a>
+                <a href="#" class="opcion-menu" onclick="accionVisual(event, 'Importar Datos')">
+                    <i class="bi bi-cloud-arrow-up"></i> Importar Datos
+                </a>
+                <a href="#" class="opcion-menu" onclick="accionVisual(event, 'Configurar Columnas')">
+                    <i class="bi bi-layout-three-columns"></i> Configurar Columnas
+                </a>
+            </div>
+        </div>
+        
+        <button id="btn-guardar-estado" class="btn-guardar-cambios" style="display: none;" onclick="confirmarCambio()">
+            <i class="bi bi-check2-circle"></i> Guardar
+        </button>
+    </div>
+
+                        <table class="crud-table" id="personasTable">
+                            <thead>
+                                <tr>
+                                    <th>Perfil</th>
+                                    <th>Descripcion</th>
+                                    <th>Fecha de creacion</th>
+                                    <th>Fecha de actualizacion</th>
+                                    <th>Estatus</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody"></tbody>
+                            <tbody id="tableBody">
+    {% for perfil in perfiles %}
+    <tr>
+        <td>{{ perfil.nombre }}</td>
+        <td>{{ perfil.descripcion }}</td>
+        <td>{{ perfil.fecha_creacion }}</td>
+        <td>{{ perfil.fecha_actualizacion }}</td>
+        <td>
+            <select onchange="cambiarEstado('{{ perfil.id }}', this.value); mostrarBotonGuardar()">
+                <option value="ACTIVO" {% if perfil.estatus == 'ACTIVO' %}selected{% endif %}>ACTIVO</option>
+                <option value="INACTIVO" {% if perfil.estatus == 'INACTIVO' %}selected{% endif %}>INACTIVO</option>
+            </select>
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+                        </table>
+
+                        <div class="pagination-container">
+                            <div class="pagination-buttons">
+                                <button class="btn-pagination" onclick="paginaAnterior()" id="btnPrev" disabled>Anterior</button>
+                                <button class="btn-pagination" onclick="paginaSiguiente()" id="btnNext">Siguiente</button>
+                            </div>
+                            <div class="per-page">
+                                <span id="pageInfo">Página 1 de 2</span>
+                                <span class="items-total" id="totalItems">7 items</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    {% endblock %}
+    {% block extra_js %}
+    <!-- SCRIPTS -->
+    <script>
+        // DATOS
+
+        let personasFiltradas = [...personas];
+        let personaEditandoId = null;
+        let paginaActual = 1;
+        const itemsPorPagina = 5;
+
+        // Elementos DOM
+        const dashboardMain = document.getElementById('dashboardMain');
+        const modal = document.getElementById('modalPersona');
+        const tableBody = document.getElementById('tableBody');
+        const totalObjects = document.getElementById('totalObjects');
+        const userDisplay = document.getElementById('userDisplay');
+        const pageTitle = document.getElementById('pageTitle');
+        const filterIndicator = document.getElementById('filterIndicator');
+        const searchSection = document.getElementById('searchSection');
+        const tableContainer = document.getElementById('tableContainer');
+        const btnPrev = document.getElementById('btnPrev');
+        const btnNext = document.getElementById('btnNext');
+        const pageInfo = document.getElementById('pageInfo');
+        const totalItems = document.getElementById('totalItems');
+        const filterPerson = document.getElementById('filterPerson');
+        const filterEmail = document.getElementById('filterEmail');
+
+        const navDashboard = document.getElementById('navDashboard');
+        const navPersonas = document.getElementById('navPersonas');
+        const navPerfiles = document.getElementById('navPerfiles');
+        const navConfiguracion = document.getElementById('navConfiguracion');
+        function aplicarFiltros() {
+    // 1. Capturamos los elementos del DOM de forma segura
+    const inputPerfilElement = document.getElementById('filterPerson');
+    const inputFechaElement = document.getElementById('filterOrganization');
+
+    // Si por alguna razón no existen, detenemos la función para que no colapse
+    if (!inputPerfilElement || !inputFechaElement) return;
+
+    // 2. Obtenemos los valores
+    const textoPerfil = inputPerfilElement.value.toLowerCase();
+    const textoFecha = inputFechaElement.value; // El input date retorna YYYY-MM-DD
+
+    // 3. Convertimos la fecha (YYYY-MM-DD) al formato de tu tabla (DD/MM/YYYY)
+    let fechaFormateada = "";
+    if (textoFecha) {
+        const partes = textoFecha.split('-'); 
+        if (partes.length === 3) {
+            fechaFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+    }
+
+    // 4. Filtramos el arreglo
+    personasFiltradas = personas.filter(persona => {
+        const nombreCompleto = `${persona.nombre} ${persona.apellido}`.toLowerCase();
+        
+        const cumplePerfil = !textoPerfil || nombreCompleto.includes(textoPerfil);
+        // Recuerda que en tu arreglo de datos, la fecha está guardada en la variable 'organizacion'
+        const cumpleFecha = !fechaFormateada || persona.organizacion === fechaFormateada;
+
+        return cumplePerfil && cumpleFecha;
+    });
+
+    // 5. Reiniciamos a la página 1 y dibujamos la tabla
+    paginaActual = 1;
+    renderizarTabla();
+}
+
+        // FUNCIONES DEL DASHBOARD
+        function cambiarSeccion(seccion) {
+            navDashboard.classList.remove('active');
+            navPersonas.classList.remove('active');
+            navPerfiles.classList.remove('active');
+            navConfiguracion.classList.remove('active');
+
+            if (seccion === 'dashboard') {
+                navDashboard.classList.add('active');
+                pageTitle.textContent = 'Buscar personas';
+                filterIndicator.style.display = 'flex';
+                searchSection.style.display = 'block';
+                tableContainer.style.display = 'block';
+            } else if (seccion === 'personas') {
+                navPersonas.classList.add('active');
+                pageTitle.textContent = 'Gestión de Personas';
+                filterIndicator.style.display = 'none';
+                searchSection.style.display = 'none';
+                tableContainer.style.display = 'block';
+            } else if (seccion === 'perfiles') {
+                navPerfiles.classList.add('active');
+                pageTitle.textContent = 'Administración de Perfiles';
+                filterIndicator.style.display = 'none';
+                searchSection.style.display = 'none';
+                tableContainer.style.display = 'block';
+            } else if (seccion === 'configuracion') {
+                navConfiguracion.classList.add('active');
+                pageTitle.textContent = 'Configuración del Sistema';
+                filterIndicator.style.display = 'none';
+                searchSection.style.display = 'none';
+                tableContainer.style.display = 'block';
+            }
+        }
+
+        function toggleFilters() {
+            const container = document.getElementById('filtersContainer');
+            const arrow = document.getElementById('searchArrow');
+            container.classList.toggle('collapsed');
+            arrow.classList.toggle('rotated');
+        }
+
+        function crearNuevoUsuario() {
+            personaEditandoId = null;
+            
+            document.getElementById('editNombre').value = '';
+            document.getElementById('editApellido').value = '';
+            document.getElementById('editEmail').value = '';
+            document.getElementById('editOrganizacion').value = 'Démó';
+            document.getElementById('editEstado').value = 'CREADO';
+
+            modal.classList.add('show');
+        }
+
+        function buscarUsuarios() {
+            cambiarSeccion('dashboard');
+            const container = document.getElementById('filtersContainer');
+            const arrow = document.getElementById('searchArrow');
+            if (container.classList.contains('collapsed')) {
+                container.classList.remove('collapsed');
+                arrow.classList.remove('rotated');
+            }
+            setTimeout(() => filterPerson.focus(), 100);
+        }
+
+        function cambiarEstado(id, nuevoEstado) {
+            const persona = personas.find(p => p.id === id);
+            if (persona) {
+                persona.estado = nuevoEstado;
+                aplicarFiltros();
+            }
+        }
+
+        function renderizarTabla() {
+    const inicio = (paginaActual - 1) * itemsPorPagina;
+    const fin = inicio + itemsPorPagina;
+    const personasPaginadas = personasFiltradas.slice(inicio, fin);
+
+    tableBody.innerHTML = '';
+
+    // NUEVO: Validar si la búsqueda no arrojó resultados
+    if (personasFiltradas.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 30px; color: #6c757d;">
+                    <i class="bi bi-search" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
+                    No se encontró ningún perfil con esa búsqueda
+                </td>
+            </tr>
+        `;
+        
+        // Actualizamos los contadores a cero
+        totalObjects.textContent = `Total: 0 personas`;
+        totalItems.textContent = `0 items`;
+        pageInfo.textContent = `Página 1 de 1`;
+        btnPrev.disabled = true;
+        btnNext.disabled = true;
+    
+        function confirmarCambio() {
+    const boton = document.getElementById('btn-guardar-estado');
+    
+    fetch('{% url "actualizar_estatus_perfil" %}', { // Asegúrate de tener esta URL en urls.py
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify(estadosPendientes)
+    })
+    .then(response => {
+        if (response.ok) {
+            // Aquí va tu código actual para mostrar "¡Guardado!"
+            boton.innerHTML = '<i class="bi bi-check2-all"></i> ¡Guardado!';
+            // ... resto de tu lógica visual
+        }
+    });
+}    
+        return; // Detenemos la función aquí para que no intente dibujar filas vacías
+    }
+
+    // Si hay resultados, dibujamos las filas normalmente
+    personasPaginadas.forEach(persona => {
+        const estadoClass = persona.estado === 'CREADO' ? 'creado' :
+                           persona.estado === 'ACTIVO' ? 'activo' : 'inactivo';
+
+        const row = document.createElement('tr');
+        row.onclick = () => editarPersona(persona.id);
+        row.innerHTML = `
+            <td><span class="person-name">${persona.nombre} ${persona.apellido}</span></td>
+            <td>${persona.apellido}</td>
+            <td><span class="organization-name">${persona.organizacion}</span></td>
+            <td><span class="email-address">${persona.email}</span></td>
+            <td>
+                <div class="status-container">
+                    <span class="status-dot ${estadoClass}"></span>
+                    <select class="status-select-clean ${estadoClass}" onchange="cambiarEstado(${persona.id}, this.value); mostrarBotonGuardar()" onclick="event.stopPropagation()">
+                        <option value="CREADO" ${persona.estado === 'CREADO' ? 'selected' : ''}>CREADO</option>
+                        <option value="ACTIVO" ${persona.estado === 'ACTIVO' ? 'selected' : ''}>ACTIVO</option>
+                        <option value="INACTIVO" ${persona.estado === 'INACTIVO' ? 'selected' : ''}>INACTIVO</option>
+                    </select>
+                </div>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+
+    totalObjects.textContent = `Total: ${personasFiltradas.length} personas`;
+    totalItems.textContent = `${personasFiltradas.length} items`;
+
+    const totalPaginas = Math.ceil(personasFiltradas.length / itemsPorPagina);
+    pageInfo.textContent = `Página ${paginaActual} de ${totalPaginas || 1}`;
+
+    btnPrev.disabled = paginaActual === 1;
+    btnNext.disabled = paginaActual === totalPaginas || totalPaginas === 0;
+}
+
+        function aplicarFiltros() {
+            const filterPerson = document.getElementById('filterPerson').value.toLowerCase();
+            const filterEmail = document.getElementById('filterEmail').value.toLowerCase();
+            const filterOrg = document.getElementById('filterOrganization').value;
+
+            personasFiltradas = personas.filter(persona => {
+                const nombreCompleto = `${persona.nombre} ${persona.apellido}`.toLowerCase();
+                const cumplePersona = !filterPerson || nombreCompleto.includes(filterPerson);
+                const cumpleEmail = !filterEmail || persona.email.toLowerCase().includes(filterEmail);
+                const cumpleOrg = !filterOrg || persona.organizacion === filterOrg;
+
+                return cumplePersona && cumpleEmail && cumpleOrg;
+            });
+
+            paginaActual = 1;
+            renderizarTabla();
+        }
+
+        function paginaAnterior() {
+            if (paginaActual > 1) {
+                paginaActual--;
+                renderizarTabla();
+            }
+        }
+
+        function paginaSiguiente() {
+            const totalPaginas = Math.ceil(personasFiltradas.length / itemsPorPagina);
+            if (paginaActual < totalPaginas) {
+                paginaActual++;
+                renderizarTabla();
+            }
+        }
+
+        function editarPersona(id) {
+            const persona = personas.find(p => p.id === id);
+            if (persona) {
+                personaEditandoId = id;
+                document.getElementById('modalTitle').textContent = 'Edit Molkobain Ticket';
+                document.getElementById('displayNombre').textContent = `Edit: ${persona.nombre} ${persona.apellido}`;
+
+                document.getElementById('editNombre').value = persona.nombre;
+                document.getElementById('editApellido').value = persona.apellido;
+                document.getElementById('editEmail').value = persona.email;
+                document.getElementById('editOrganizacion').value = persona.organizacion;
+                document.getElementById('editEstado').value = persona.estado;
+
+                modal.classList.add('show');
+            }
+        }
+
+        function guardarPersona() {
+            const nombre = document.getElementById('editNombre').value.trim();
+            const apellido = document.getElementById('editApellido').value.trim();
+            const email = document.getElementById('editEmail').value.trim();
+            const organizacion = document.getElementById('editOrganizacion').value;
+            const estado = document.getElementById('editEstado').value;
+
+            if (!nombre || !apellido || !email) {
+                alert('Por favor complete los campos obligatorios');
+                return;
+            }
+
+            if (personaEditandoId) {
+                const index = personas.findIndex(p => p.id === personaEditandoId);
+                if (index !== -1) {
+                    personas[index] = {
+                        ...personas[index],
+                        nombre,
+                        apellido,
+                        email,
+                        organizacion,
+                        estado
+                    };
+                }
+            } else {
+                const nuevoId = personas.length + 1;
+                personas.push({
+                    id: nuevoId,
+                    nombre,
+                    apellido,
+                    organizacion,
+                    estado,
+                    email
+                });
+            }
+
+            aplicarFiltros();
+            cerrarModal();
+        }
+
+        function cerrarModal() {
+            modal.classList.remove('show');
+            personaEditandoId = null;
+        }
+
+        // Inicialización
+        renderizarTabla();
+// 1. Variable para guardar los cambios temporalmente
+        let estadosPendientes = {};
+
+        // 2. REEMPLAZA tu función cambiarEstado por esta:
+        function cambiarEstado(idPersona, nuevoEstado) {
+            // Guardamos el cambio en memoria, pero NO recargamos la tabla aún
+            estadosPendientes[idPersona] = nuevoEstado;
+        }
+
+        // 3. AGREGA estas dos funciones para manejar el botón:
+        function mostrarBotonGuardar() {
+            const boton = document.getElementById('btn-guardar-estado');
+            if (boton) {
+                boton.style.display = 'inline-flex';
+                boton.classList.add('animacion-aparecer');
+            }
+        }
+
+        function confirmarCambio() {
+            const boton = document.getElementById('btn-guardar-estado');
+            
+            // Aplicamos los cambios guardados a tu arreglo 'personas'
+            for (let id in estadosPendientes) {
+                let index = personas.findIndex(p => p.id == id);
+                if (index !== -1) {
+                    personas[index].estado = estadosPendientes[id];
+                }
+            }
+
+            // Efecto visual de guardado exitoso
+            boton.innerHTML = '<i class="bi bi-check2-all"></i> ¡Guardado!';
+            boton.style.backgroundColor = '#20c997'; 
+            
+            // Ocultamos el botón y refrescamos la tabla después de 1.5 segundos
+            setTimeout(() => {
+                boton.style.display = 'none';
+                boton.classList.remove('animacion-aparecer');
+                boton.innerHTML = '<i class="bi bi-check2-circle"></i> Guardar'; 
+                boton.style.backgroundColor = '#28a745'; // Color verde original
+                
+                estadosPendientes = {}; // Vaciamos el almacén temporal
+                
+                // Refrescamos la tabla usando tu función existente
+                aplicarFiltros(); 
+            }, 1500);
+        }
+        // 1. Muestra u oculta el menú al dar clic en los 3 puntitos
+        function toggleMenuOpciones(event) {
+            event.stopPropagation(); // Evita que el clic cierre el menú al instante
+            const menu = document.getElementById('menu-tres-puntos');
+            menu.classList.toggle('mostrar');
+        }
+
+        // 2. Hace que el menú se cierre si haces clic en cualquier parte de la pantalla
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('menu-tres-puntos');
+            if (menu && menu.classList.contains('mostrar')) {
+                menu.classList.remove('mostrar');
+            }
+        });
+
+        // 3. Simula una acción visual para que veas que funcionan los botones
+        function accionVisual(event, nombreAccion) {
+            event.preventDefault(); // Evita que la página salte hacia arriba
+            
+            // Cerramos el menú
+            document.getElementById('menu-tres-puntos').classList.remove('mostrar');
+            
+            // Mostramos la alerta
+            alert("Has hecho clic en: " + nombreAccion + "\n(Esta función se conectará pronto)");
+        }
+    </script>
+    {% endblock %}

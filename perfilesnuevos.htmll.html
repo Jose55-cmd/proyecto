@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+
+    {% block extra_css %}
+    <link rel="stylesheet" href="{% static 'perfil_nuevo.css' %}">
+    {% endblock %}
+    {% block content %}
+        <main class="content">
+            <div class="container">
+                <div class="top-bar-content">
+                    <h1 class="main-title">Crear Perfil de Usuario</h1>
+                </div>
+
+                <div class="logo-box">
+                    <img src="{% static 'imagenes/inzur.svg' %}" alt="inzurAi+">
+                </div>
+
+                <header class="header">
+                    <div class="header-actions" id="edit-trigger">
+                        <span class="edit-icon"> ✎ </span>  ↻   ⚲   ⋮
+                    </div>
+                </header>
+
+                <nav class="tabs-nav">
+                    <div class="tab">Propiedades</div>
+                </nav>
+                <form method="POST" action="{% url 'perfil_nuevo' %}"> 
+    {% csrf_token %}
+    
+    <main class="content-grid" id="main-container">
+        <div class="col">
+            <section>
+                <h2>Información del Perfil</h2>
+                <div class="row">
+                    <div class="label">Perfil</div>
+                    <div class="value">
+                        <input type="text" name="nombre" id="u-nombre" value="Administrador" readonly>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="label">Estatus</div>
+                    <div class="value">
+                        <select name="estatus" id="u-estado" disabled>
+                            <option value="activo" selected>Activo</option>
+                            <option value="inactivo">Inactivo</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+        </div>
+        </main>
+
+    <button type="submit" class="btn-guardar-flotante" id="btn-save">GUARDAR CAMBIOS</button>
+</form>
+
+                <main class="content-grid" id="main-container">
+                    <div class="col">
+                        <section>
+                            <h2>Información del Perfil</h2>
+                            <div class="row">
+                                <div class="label">Perfil</div>
+                                <div class="value"><input type="text" id="u-nombre" value="Administrador" readonly></div>
+                            </div>
+                            <div class="row">
+                                <div class="label">Descripcion</div>
+                                <div class="value"><input type="text" id="u-apellido" value="Administrador" readonly></div>
+                            </div>
+                            <div class="row">
+                                <div class="label">	Fecha de creacion</div>
+                                <div class="value"><input type="text" id="u-email" value="10/03/2026" readonly></div>
+                            </div>
+                            <div class="row">
+                                <div class="label">	Fecha de actualizacion</div>
+                                <div class="value">
+                                    <select id="u-org" disabled>
+                                        <option value="Combodo Corretaje" selected>11/03/2026</option>
+                                        <option value="IT Department"></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="label">Estatus</div>
+                                <div class="value">
+                                    <select id="u-estado" disabled>
+                                        <option value="activo" selected>Activo</option>
+                                        <option value="inactivo">Inactivo</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="col">
+                        <section>
+                            <h2>Parámetros JSON de Salida</h2>
+                            <textarea class="json-area" id="json-preview" readonly>
+{
+  "operacion": "usuario/crear",
+  "datos": {
+    "nombre": "Administrador",
+    "apellido": "Administrador",
+    "email": "10/03/2026",
+    "organizacion": "	11/03/2026",
+    "estado": "activo"
+  }
+}</textarea>
+                        </section>
+                    </div>
+                </main>
+            </div>
+            
+            <button class="btn-guardar-flotante" id="btn-save">GUARDAR CAMBIOS</button>
+        </main>
+    </div>
+{% endblock %}
+{% block extra_js %}
+    <script>
+        const editIcon = document.getElementById('edit-trigger');
+        const saveBtn = document.getElementById('btn-save');
+        const container = document.getElementById('main-container');
+        const inputs = document.querySelectorAll('input, select, textarea');
+
+        editIcon.addEventListener('click', () => {
+            container.classList.add('editing');
+            inputs.forEach(el => {
+                el.removeAttribute('readonly');
+                el.removeAttribute('disabled');
+            });
+            saveBtn.style.display = 'block';
+        });
+
+        saveBtn.addEventListener('click', () => {
+            container.classList.remove('editing');
+            inputs.forEach(el => {
+                el.setAttribute('readonly', true);
+                el.setAttribute('disabled', true);
+            });
+            saveBtn.style.display = 'none';
+        });
+        
+    </script>
+{% endblock %}
